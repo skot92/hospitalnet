@@ -1,0 +1,30 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/masterLayout.xhtml">
+	<ui:define name="pageTitle">Kimutatás: Betegségek</ui:define>
+	<ui:define name="content">
+		<p:panel header="Leggyakoribb betegségek">
+			<p:outputPanel id="piePanel">
+				<p:chart id="piechart" type="pie" model="#{statView.pieModel}"
+					rendered="#{not empty statView.pieModel}"
+					style="width:800px;height:500px" />
+				<f:verbatim>
+					<script type="text/javascript">
+						function pieExtender() {
+							this.cfg.highlighter = {
+								show : true,
+								tooltipLocation : 'ne',
+								useAxesFormatters : false,
+								formatString : '%s: %d'
+							};
+						}
+					</script>
+				</f:verbatim>
+			</p:outputPanel>
+		</p:panel>
+	</ui:define>
+</ui:composition>

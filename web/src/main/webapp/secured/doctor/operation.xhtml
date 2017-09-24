@@ -1,0 +1,200 @@
+<ui:composition template="/templates/masterLayout.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:sec="http://www.springframework.org/security/tags">
+	<ui:define name="head-extra">
+		<!-- custom css -->
+	</ui:define>
+	<ui:define name="pageTitle">Műtétek</ui:define>
+	<ui:define name="content">
+		<h:form id="tables">
+			<p:panel id="operationPanel" header="Műtéteim">
+			
+				<h:outputText value="Kezdés" />
+				<p:calendar id="fromOp" value="#{operationmanager.fromOpDate}"
+					showOn="button" pattern="yyyy.MM.dd HH:mm" mask="true" >
+					<f:convertDateTime pattern="yyyy.MM.dd HH:mm" timeZone="GMT+1" />
+					<p:ajax event="dateSelect" listener="#{operationmanager.init}"
+						update="operationTable" />
+				</p:calendar>
+				
+				<p:dataTable id="operationTable" var="operation"
+					value="#{operationmanager.opLazyModel}" emptyMessage="Nincs műtét"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+					rowsPerPageTemplate="5,10,15" paginator="true" rows="5"
+					rowKey="#{operation.id}" lazy="true">
+
+					<f:facet name="header">
+						<h:outputText value="Műtétek" />
+					</f:facet>
+
+
+
+					<p:column headerText="Név" sortBy="#{operation.operationName}">
+						<h:outputText value="#{operation.operationName}" />
+					</p:column>
+
+					<p:column headerText="Kezdés" sortBy="#{operation.fromDate}">
+						<h:outputText value="#{operation.fromDate}">
+							<f:convertDateTime pattern="yyyy.MM.dd HH:mm" timeZone="GMT+1" />
+						</h:outputText>
+					</p:column>
+
+					<p:column headerText="Vég" sortBy="#{operation.toDate}">
+						<h:outputText value="#{operation.toDate}">
+							<f:convertDateTime pattern="yyyy.MM.dd HH:mm" timeZone="GMT+1" />
+						</h:outputText>
+					</p:column>
+
+					<p:column headerText="Páciens neve"
+						sortBy="#{operation.patient.name}">
+						<h:outputText value="#{operation.patient.name}" />
+					</p:column>
+				</p:dataTable>
+			</p:panel>
+			<p:panel id="PatientPanel" header="Műtét hozzáadása">
+				<p:dataTable id="patientTable" var="patient"
+					value="#{operationmanager.patientLazyModel}"
+					emptyMessage="Nincs beteg"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+					rowsPerPageTemplate="5,10,15" lazy="true" paginator="true" rows="5"
+					selectionMode="single" rowKey="#{patient.id}"
+					selection="#{operationmanager.selectedpatient}">
+
+					<p:ajax event="rowSelect"
+						listener="#{operationmanager.onRowSelect}"
+						update=":tables:mcrDialog,:tables:saveOperation" />
+
+					<f:facet name="header">
+						<h:outputText value="Betegek" />
+					</f:facet>
+
+					<p:column headerText="Név" sortBy="#{patient.name}"
+						filterBy="#{patient.name}">
+						<h:outputText value="#{patient.name}" />
+					</p:column>
+
+					<p:column headerText="TAJ" sortBy="#{patient.ssn}"
+						filterBy="#{patient.ssn}">
+						<h:outputText value="#{patient.ssn}" />
+					</p:column>
+
+					<p:column headerText="Személyi szám" sortBy="#{patient.idNumber}"
+						filterBy="#{patient.idNumber}">
+						<h:outputText value="#{patient.idNumber}" />
+					</p:column>
+
+					<p:column headerText="Születési dátum ">
+						<h:outputText value="#{patient.dateOfBirth}">
+							<f:convertDateTime pattern="yyyy.MM.dd HH:mm" timeZone="GMT+1" />
+						</h:outputText>
+					</p:column>
+
+					<p:column headerText="Státusz" sortBy="#{patient.status}"
+						filterBy="#{patient.status}">
+						<h:outputText value="#{patient.status}" />
+					</p:column>
+
+					<p:ajax event="rowSelect" update="tables:save " />
+				</p:dataTable>
+			</p:panel>
+
+
+			<p:panel id="buttens">
+				<p:commandButton id="open" value="Kórlapok" title="Mcr"
+					type="button" onclick="PF('mcrDialog').show()">
+				</p:commandButton>
+
+				<h:outputText value="Kezdés" />
+				<p:calendar id="start" value="#{operationmanager.startOp}"
+					showOn="button" pattern="yyyy.MM.dd HH:mm" mask="true">
+					<f:convertDateTime pattern="yyyy.MM.dd HH:mm" timeZone="GMT+1" />
+				</p:calendar>
+
+				<h:outputText value="Végzés" />
+				<p:calendar id="end" value="#{operationmanager.endOp}"
+					showOn="button" pattern="yyyy.MM.dd HH:mm" mask="true">
+					<f:convertDateTime pattern="yyyy.MM.dd HH:mm" timeZone="GMT+1" />
+				</p:calendar>
+
+				<p:commandButton id="saveOperation" value="Mentés" title="Save"
+					type="button" onclick="PF('save').show()"
+					disabled="#{operationmanager.selectedpatient == null}">
+				</p:commandButton>
+			</p:panel>
+
+			<p:dialog id="SaveDialog" widgetVar="save" modal="true"
+				showEffect="fade" hideEffect="fade" resizable="false" header="">
+				<p:inputText value="#{operationmanager.opName}" />
+				<p:commandButton id="save" value="Mentés"
+					action="#{operationmanager.saveOperation()}"
+					oncomplete="PF('save').hide()"
+					update="tables:operationTable,:growl" />
+
+			</p:dialog>
+
+
+
+
+			<p:dialog id="mcrDialog" widgetVar="mcrDialog" modal="true"
+				showEffect="fade" hideEffect="fade" resizable="false" header="">
+				<p:dataTable id="mcrTable" var="mcr"
+					value="#{operationmanager.medicalRecords}"
+					selection="#{operationmanager.selectedMcr}" rowKey="#{mcr.name}"
+					style="margin-bottom:0"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+					rowsPerPageTemplate="5,10,15" paginator="true" rows="5">
+					<f:facet name="header">
+						<h:outputText value="Kórlapok" />
+					</f:facet>
+					<p:ajax event="rowSelectRadio"
+						update=":tables:saveMcr,:tables:updateMcr" />
+					<p:column selectionMode="single"
+						style="width:16px;text-align:center" />
+					<p:column headerText="Név">
+						<h:outputText value="#{mcr.name}" />
+					</p:column>
+					<p:column headerText="Dátum" sortBy="#{mcr.date}">
+						<h:outputText value="#{mcr.date}" />
+					</p:column>
+				</p:dataTable>
+
+				<div align="center" style="margin-top: 10px;">
+					<p:commandButton id="updateMcr" value="Megnyitás"
+						disabled="#{operationmanager.selectedMcr == null}"
+						action="#{operationmanager.mcrUpdate()}" update=":tables:editor"
+						onclick="PF('mcrOpen').show()" />
+				</div>
+			</p:dialog>
+
+			<p:dialog id="McrDialogOpen" widgetVar="mcrOpen" modal="true"
+				header="" styleClass="center">
+				<f:facet name="header">
+					<h:outputText value="Kórlap szerkesztés" />
+				</f:facet>
+
+				<p:panelGrid columns="1" columnClasses="label,value">
+					<f:facet name="header">
+						<h:outputText value="Kórlap" />
+					</f:facet>
+
+					<p:editor id="editor" widgetVar="editorWidget" showEffect="fade"
+						value="#{operationmanager.diagnostic}" />
+					<p:commandButton id="saveMcr" value="Mentés"
+						action="#{operationmanager.updateMcr()}"
+						oncomplete="PF('mcrOpen').hide()" />
+				</p:panelGrid>
+
+			</p:dialog>
+
+
+
+
+
+		</h:form>
+	</ui:define>
+</ui:composition>

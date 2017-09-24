@@ -1,0 +1,72 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/masterLayout.xhtml">
+	<ui:define name="pageTitle">Kimutatás: Dolgozók</ui:define>
+	<ui:define name="content">
+		<p:panel header="Dolgozói kimutatás">
+			<p:outputPanel>
+				<h:form id="form">
+					<p:growl id="messages" autoUpdate="true" />
+					<p:panelGrid id="table">
+						<p:row>
+							<p:column colspan="2">
+								<p:outputLabel for="startSelect" value="Kezdő dátum:" />
+								<p:calendar id="startSelect" value="#{doctorStatView.startDate}"
+									showOn="button" pattern="yyyy.MM.dd" mask="true">
+									<f:convertDateTime pattern="yyyy.MM.dd" timeZone="GMT+1" />
+								</p:calendar>
+							</p:column>
+							<p:column colspan="2">
+								<p:outputLabel for="endSelect" value="Vég dátum:" />
+								<p:calendar id="endSelect" value="#{doctorStatView.endDate}"
+									showOn="button" pattern="yyyy.MM.dd" mask="true">
+									<f:convertDateTime pattern="yyyy.MM.dd" timeZone="GMT+1" />
+								</p:calendar>
+							</p:column>
+						</p:row>
+						<p:row>
+							<p:column colspan="4">
+								<p:commandButton action="#{doctorStatView.show}"
+									value="Lekérdez" update="piechart,messages,padding"
+									onclick="PF('chartWidget').show();" />
+							</p:column>
+						</p:row>
+					</p:panelGrid>
+				</h:form>
+			</p:outputPanel>
+		</p:panel>
+		<p:dialog header="Dolgozók aránya" widgetVar="chartWidget"
+			id="chartDialog" modal="true" showEffect="fade" hideEffect="fade"
+			resizable="false">
+			<p:outputPanel id="padding">
+				<p:dataList value="#{doctorStatView.workingWorkers}" var="doc"
+					type="unordered" emptyMessage="Nem dolgozik senki">
+					<f:facet name="header">
+						<h:outputText value="Dolgozó orvosok" />
+					</f:facet>
+					<h:outputText value="#{doc.name}" />
+				</p:dataList>
+				<p:chart id="piechart" type="pie"
+					model="#{doctorStatView.chartModel}"
+					rendered="#{not empty doctorStatView.chartModel}"
+					style="width:800px;height:500px" />
+				<f:verbatim>
+					<script type="text/javascript">
+						function pieExtender() {
+							this.cfg.highlighter = {
+								show : true,
+								tooltipLocation : 'ne',
+								useAxesFormatters : false,
+								formatString : '%s: %d'
+							};
+						}
+					</script>
+				</f:verbatim>
+			</p:outputPanel>
+		</p:dialog>
+	</ui:define>
+</ui:composition>

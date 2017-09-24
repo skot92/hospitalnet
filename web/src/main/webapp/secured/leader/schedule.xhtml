@@ -1,0 +1,77 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/masterLayout.xhtml">
+
+	<ui:define name="pageTitle">Dolgozók</ui:define>
+	<ui:define name="header">
+	</ui:define>
+
+	<ui:define name="head-extra">
+		<!-- custom css -->
+	</ui:define>
+	<ui:define name="content">
+		<p:growl id="messages" showDetail="true" autoUpdate="true" />
+		<p:panel header="Beosztás">
+			<h:form id="scheduleForm">
+				<p:panelGrid>
+					<p:row>
+						<p:column>
+							<p:outputLabel value="Dolgozó: " for="workerSelect" />
+							<p:autoComplete id="workerSelect" value="#{scheduleView.worker}"
+								completeMethod="#{scheduleView.completeWorker}" var="selWorker"
+								itemLabel="#{selWorker.name}" itemValue="#{selWorker}"
+								converter="#{workerVoConverter}" forceSelection="true"
+								minQueryLength="3">
+								<p:ajax event="itemSelect" listener="#{scheduleView.onSelect}"
+									update="messages,scheduleForm" />
+							</p:autoComplete>
+						</p:column>
+					</p:row>
+					<p:row>
+						<p:column>
+							<p:schedule rendered="#{not empty scheduleView.worker}"
+								value="#{scheduleView.lazyEventModel}" id="schedule"
+								widgetVar="myschedule" timeZone="GMT+1">
+								<p:ajax event="dateSelect"
+									listener="#{scheduleView.onDateSelect}"
+									update="eventDetails,messages"
+									oncomplete="PF('eventDialog').show();" />
+								<p:ajax event="eventSelect"
+									listener="#{scheduleView.onEventSelect}"
+									update="eventDetails,messages"
+									oncomplete="PF('eventDialog').show();" />
+								<p:ajax event="eventMove" listener="#{scheduleView.onEventMove}"
+									update="messages" />
+								<p:ajax event="eventResize"
+									listener="#{scheduleView.onEventResize}" update="messages" />
+							</p:schedule>
+						</p:column>
+					</p:row>
+				</p:panelGrid>
+
+				<p:dialog widgetVar="eventDialog" header="Event Details"
+					showEffect="fade" hideEffect="fade">
+					<h:panelGrid id="eventDetails" columns="2">
+						<p:outputLabel for="from" value="From:" />
+						<p:calendar id="from" value="#{scheduleView.event.tt.from}"
+							timeZone="GMT+1" pattern="yyyy.MM.dd HH:mm" />
+
+						<p:outputLabel for="to" value="To:" />
+						<p:calendar id="to" value="#{scheduleView.event.tt.to}"
+							timeZone="GMT+1" pattern="yyyy.MM.dd HH:mm" />
+
+						<!-- 						<p:commandButton type="reset" value="Reset" /> -->
+						<p:commandButton id="addButton" value="Save"
+							actionListener="#{scheduleView.addEvent}"
+							oncomplete="PF('eventDialog').hide();"
+							update="scheduleForm:schedule,messages" />
+					</h:panelGrid>
+				</p:dialog>
+			</h:form>
+		</p:panel>
+	</ui:define>
+</ui:composition>

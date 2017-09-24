@@ -1,0 +1,63 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/masterLayout.xhtml">
+
+	<ui:define name="pageTitle">Leselejtezett Tételek</ui:define>
+	<ui:define name="header">
+	</ui:define>
+
+	<ui:define name="head-extra">
+		<!-- custom css -->
+	</ui:define>
+
+	<ui:define name="content">
+	<p:messages id="messages" showDetail="true" closable="true" />
+	<p:panel header="Elszállíttatás kezelése">
+	
+		<h:form id="form">
+			<p:dataTable id="inactiveItemTable" 
+				var="item" value="#{inactiveItemView.lazyThrowedItemModel}" selection="#{inactiveItemView.selectedTrhowedItems}" 
+				rowKey="#{item.id}" style="margin-bottom:0"
+				emptyMessage="Nincs leselejtezett tétel!"
+				paginator="false" rows="100" lazy="true"
+				paginatorTemplate=""
+				>
+					        <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
+					        <p:column headerText="Tétel Azonosító">
+					            <h:outputText value="#{item.id}" />
+					        </p:column>
+					        <p:column headerText="Termék neve">
+					            <h:outputText value="#{item.productName}" />
+					        </p:column>
+					        <p:column headerText="Jelenlegi Méret">
+					            <h:outputText value="#{item.numberOfUnitNow} #{item.unitName}" />
+					        </p:column>
+					        <p:column headerText="Tétel Méret">
+					            <h:outputText value="#{item.numberOfUnit} #{item.unitName}" />
+					        </p:column>
+					        <p:column headerText="Szavatosság">
+					            <h:outputText value="#{item.warranty}" >
+					            	<f:convertDateTime pattern="yyyy.MM.dd" timeZone="GMT+1" />
+					            </h:outputText>
+					        </p:column>
+					        <f:facet name="footer">
+					            <p:commandButton value="Elszállítva"
+					            	process="inactiveItemTable"
+					            	update="messages, inactiveItemTable"
+					            	actionListener="#{inactiveItemView.removeItems}" 
+					             	/>
+					        </f:facet>
+				</p:dataTable>
+					     
+		</h:form>
+		
+
+
+
+		</p:panel>
+	</ui:define>
+</ui:composition>

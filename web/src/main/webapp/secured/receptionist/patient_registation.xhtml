@@ -1,0 +1,155 @@
+<ui:composition template="/templates/masterLayout.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:sec="http://www.springframework.org/security/tags">
+	<ui:define name="head-extra">
+		<!-- custom css -->
+	</ui:define>
+	<ui:define name="pageTitle">Beteg felvétel</ui:define>
+	<ui:define name="content">
+
+
+		<p:panel header="Betegkezelés">
+			<h:form id="form">
+				<!-- Ez itt a tabla -->
+				<p:dataTable id="patientTable" var="patient"
+					value="#{patientreg.lazyModel}" emptyMessage="Nincs beteg"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+					rowsPerPageTemplate="5,10,15" lazy="true" paginator="true" rows="5"
+					selectionMode="single" selection="#{patientreg.selectedPatient}">
+
+					<f:facet name="header">
+						<h:outputText value="Betegek" />
+					</f:facet>
+
+					<p:ajax event="rowSelect" listener="#{patientreg.onRowSelect}"
+						update="UpdatepatientDialog,form:update" />
+
+					<p:column headerText="Név" sortBy="#{patient.name}"
+						filterBy="#{patient.name}">
+						<h:outputText value="#{patient.name}" />
+					</p:column>
+
+					<p:column headerText="TAJ" sortBy="#{patient.ssn}"
+						filterBy="#{patient.ssn}">
+						<h:outputText value="#{patient.ssn}" />
+					</p:column>
+
+					<p:column headerText="Személyi szám" sortBy="#{patient.idNumber}"
+						filterBy="#{patient.idNumber}">
+						<h:outputText value="#{patient.idNumber}" />
+					</p:column>
+
+					<p:column headerText="Születési dátum ">
+						<h:outputText value="#{patient.dateOfBirth}" >
+							<f:convertDateTime pattern="yyyy.MM.dd" timeZone="GMT+1" />
+						</h:outputText>
+					</p:column>
+
+					<p:column headerText="Státusz" sortBy="#{patient.status}"
+						filterBy="#{patient.status}">
+						<h:outputText value="#{patient.status}" />
+					</p:column>
+
+
+				</p:dataTable>
+
+				<p:commandButton id="new" value="Új beteg" title="Save"
+					type="button" onclick="PF('create').show()">
+				</p:commandButton>
+
+				<p:commandButton id="update" value="Beteg újrafelvétele"
+					title="Update" type="button" onclick="PF('update').show()"
+					disabled="#{patientreg.selectedPatient == null or
+					 patientreg.selectedPatient.status == 'aktív'}">
+				</p:commandButton>
+
+
+
+
+			</h:form>
+
+			<p:dialog id="CreatepatientDialog" widgetVar="create" modal="true"
+				showEffect="fade" hideEffect="fade" resizable="false" header="">
+				<h:form id="dialogFormCreate">
+
+					<p:outputPanel id="whDetail" style="text-align:left;">
+						<p:panelGrid columns="2" columnClasses="label,value">
+
+							<h:outputText value="Név" />
+							<p:inputText id="nameInput" required="true"
+								value="#{patientreg.name}" />
+
+							<h:outputText value="TAJ" />
+							<p:inputText id="ssn" required="true" value="#{patientreg.ssn}" />
+
+							<h:outputText value="Személyi szám" />
+							<p:inputText id="idNumber" required="true"
+								value="#{patientreg.idNumber}" />
+
+							<h:outputText value="Születési dátum" />
+							<p:calendar id="calendar" value="#{patientreg.dateOfBirth}"
+								showOn="button" pattern="yyyy.MM.dd" mask="true">
+								<f:convertDateTime pattern="yyyy.MM.dd" timeZone="GMT+1" />
+							</p:calendar>
+
+							<h:outputText value="Kórlap" />
+							<p:editor id="editor" widgetVar="editorWidget" showEffect="fade"
+								value="#{patientreg.diagnostic}" />
+
+						</p:panelGrid>
+						<div align="center" style="margin-top: 10px;">
+							<p:commandButton id="savePatient" value="Mentés"
+								action="#{patientreg.save()}" icon="ui-icon-check"
+								update="CreatepatientDialog,form:patientTable,:growl"
+								oncomplete="PF('create').hide();" />
+						</div>
+					</p:outputPanel>
+				</h:form>
+			</p:dialog>
+
+			<p:dialog id="UpdatepatientDialog" widgetVar="update" modal="true"
+				showEffect="fade" hideEffect="fade" resizable="false" header="">
+				<h:form id="dialogFormUpdate">
+
+					<p:outputPanel id="whDetail" style="text-align:left;">
+						<p:panelGrid columns="2" columnClasses="label,value">
+
+							<h:outputText value="Név" />
+							<p:inputText id="nameInput" required="true"
+								value="#{patientreg.upname}" />
+
+							<h:outputText value="TAJ" />
+							<p:inputText id="ssn" required="true" value="#{patientreg.upssn}" />
+
+							<h:outputText value="Személyi szám" />
+							<p:inputText id="idNumber" required="true"
+								value="#{patientreg.upidNumber}" />
+
+							<h:outputText value="Születési dátum" />
+							<p:calendar id="calendar" value="#{patientreg.updateOfBirth}"
+								showOn="button" pattern="yyyy.MM.dd" mask="true">
+								<f:convertDateTime pattern="yyyy.MM.dd" timeZone="GMT+1" />
+							</p:calendar>
+
+							<h:outputText value="Kórlap" />
+							<p:editor id="ueditor" widgetVar="ueditorWidget"
+								showEffect="fade" value="#{patientreg.updiagnostic}" />
+
+						</p:panelGrid>
+						<div align="center" style="margin-top: 10px;">
+							<p:commandButton id="updatePatient" value="Frissités"
+								action="#{patientreg.update()}" icon="ui-icon-check"
+								update="UpdatepatientDialog,form:patientTable,:growl"
+								oncomplete="PF('update').hide();" />
+						</div>
+					</p:outputPanel>
+				</h:form>
+			</p:dialog>
+		</p:panel>
+	</ui:define>
+</ui:composition>

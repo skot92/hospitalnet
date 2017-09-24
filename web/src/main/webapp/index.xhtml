@@ -1,0 +1,16 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/masterLayout.xhtml"
+	xmlns:sec="http://www.springframework.org/security/tags">
+	<ui:define name="pageTitle">HospitalNET</ui:define>
+	<ui:define name="content">
+
+		<sec:authorize
+			ifAnyGranted="ROLE_ADMIN, ROLE_LEADER, ROLE_RECEPTIONIST, ROLE_DOCTOR, ROLE_WAREHOUSEMANAGER">
+		</sec:authorize>
+
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,112 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/masterLayout.xhtml">
+
+	<ui:define name="pageTitle">Dolgozók</ui:define>
+	<ui:define name="header">
+	</ui:define>
+
+	<ui:define name="head-extra">
+		<!-- custom css -->
+	</ui:define>
+
+	<ui:define name="content">
+		<p:panel header="Dolgozók">
+			<h:form id="form">
+				<p:dataTable var="worker" value="#{workersView.lazyWorkerModel}"
+					paginator="true" rows="10" emptyMessage="Nincs dolgozó"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+					rowsPerPageTemplate="5,10,15" selectionMode="single"
+					selection="#{workersView.selectedWorker}" id="workerTable"
+					lazy="true">
+					<p:ajax event="rowSelect" listener="#{workersView.onRowSelect}"
+						update="updateWorkerForm:workerDetail,form:updateWorkerButton" />
+					<p:column headerText="ID" sortBy="#{worker.id}">
+						<h:outputText value="#{worker.id}" />
+					</p:column>
+					<p:column headerText="Név" sortBy="#{worker.name}"
+						filterBy="#{worker.name}">
+						<h:outputText value="#{worker.name}" />
+					</p:column>
+					<p:column headerText="Beosztás" sortBy="#{worker.role}">
+						<h:outputText value="#{workersView.roleView(worker.role)}" />
+					</p:column>
+				</p:dataTable>
+
+				<p:commandButton id="addWorkerButton" value="Új dolgozó"
+					actionListener="#{workersView.onAddButtonClick}" />
+
+				<p:commandButton id="updateWorkerButton" value="Módosítás"
+					type="button" onclick="PF('workerDialogWidget').show();"
+					disabled="#{workersView.selectedWorker == null or workersView.newWorker == true}" />
+			</h:form>
+		</p:panel>
+		
+		<p:dialog header="Dolgozó adatai" widgetVar="workerDialogWidget"
+			id="workerDialog" modal="true" showEffect="fade" hideEffect="fade"
+			resizable="false">
+
+			<h:form id="updateWorkerForm">
+				<p:messages id="updateMsgs" showDetail="true" closable="true" />
+				<p:outputPanel id="workerDetail" style="text-align:center;">
+					<p:panelGrid columns="2"
+						rendered="#{not empty workersView.selectedWorker and workersView.newWorker != null}"
+						columnClasses="label,value">
+
+						<h:outputLabel id="outTxtUserNameId" value="Felhasználónév"
+							name="outTxtUserNameNm"></h:outputLabel>
+						<p:inputText id="userName" disabled="#{not workersView.newWorker}"
+							value="#{workersView.selectedWorker.username}" />
+
+						<h:outputLabel for="pwd1" value="Jelszó" />
+						<p:password id="pwd1" value="#{workersView.newPassword}"
+							label="Password 1" />
+
+						<h:outputLabel for="pwd2" value="Jelszó ismét" />
+						<p:password id="pwd2" value="#{workersView.newPassword2}"
+							label="Password 2" />
+
+						<h:outputLabel for="fullName" value="Teljes név" />
+						<p:inputText id="fullName"
+							value="#{workersView.selectedWorker.name}" />
+
+						<h:outputLabel for="ssn" value="TAJ" />
+						<p:inputText id="ssn" value="#{workersView.selectedWorker.ssn}" />
+
+						<h:outputLabel for="idnum" value="Személyi szám" />
+						<p:inputText id="idnum"
+							value="#{workersView.selectedWorker.idNumber}" />
+
+						<p:outputLabel for="calendar" value="Születési dátum" />
+						<p:calendar id="calendar"
+							value="#{workersView.selectedWorker.dateOfBirth}" showOn="button"
+							pattern="yyyy.MM.dd" mask="true">
+							<f:convertDateTime pattern="yyyy.MM.dd" timeZone="GMT+1" />
+						</p:calendar>
+
+						<h:outputLabel for="roleSelecter" value="Munkakör" />
+						<p:selectOneListbox id="roleSelecter"
+							value="#{workersView.newRole}">
+							<f:selectItem itemLabel="Vezető" itemValue="LEADER" />
+							<f:selectItem itemLabel="Orvos" itemValue="DOCTOR" />
+							<f:selectItem itemLabel="Recepciós" itemValue="RECEPTIONIST" />
+							<f:selectItem itemLabel="Raktárfelügyelő"
+								itemValue="WAREHOUSEMANAGER" />
+						</p:selectOneListbox>
+
+					</p:panelGrid>
+					<div align="center" style="margin-top: 10px;">
+						<p:commandButton id="saveWorker" value="Mentés"
+							action="#{workersView.save()}" icon="ui-icon-check"
+							update="updateMsgs" />
+					</div>
+				</p:outputPanel>
+			</h:form>
+		</p:dialog>
+
+	</ui:define>
+</ui:composition>
